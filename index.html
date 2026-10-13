@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Garden</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Questrial&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#dfe6f7;--ink:#1c1c24}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:radial-gradient(circle at 30% 20%,#f3f6ff,var(--bg));display:grid;place-items:center;font-family:Tahoma,Verdana,sans-serif;padding:12px}
+.win{width:min(560px,100%);border:3px solid #0831d9;border-radius:9px 9px 3px 3px;background:#ece9d8;box-shadow:0 14px 40px rgba(20,40,120,.28);overflow:hidden}
+.title{display:flex;align-items:center;gap:6px;padding:4px 5px 4px 8px;color:#fff;font:700 13px Tahoma,sans-serif;background:linear-gradient(#2a6df0,#0a4fe0 40%,#0a57e8 85%,#0a3fc0)}
+.title span{flex:1}
+.title i{width:21px;height:21px;border:1px solid #fff;border-radius:3px;background:linear-gradient(#5b95ff,#1c55e0)}
+.title i.x{background:linear-gradient(#e9876b,#c53a1a)}
+.menu{display:flex;gap:14px;padding:3px 8px;font-size:12px;color:#000;border-bottom:1px solid #aca899}
+.stage{background:#fff;height:min(340px,62vh);display:flex;align-items:center;justify-content:space-between;gap:12px;padding:20px 24px}
+.lyric{flex:1 1 55%;font:clamp(20px,5.4vw,29px)/1.2 Questrial,"Trebuchet MS",sans-serif;color:var(--ink);transition:opacity .25s}
+.lyric.off{opacity:0}
+.pic{flex:0 0 36%;aspect-ratio:1;display:grid;place-items:center;transition:opacity .25s}
+.pic.off{opacity:0}
+.pic img{max-width:100%;max-height:100%}
+.ph{width:100%;height:100%;border:2px dashed #b5bfd9;border-radius:14px;display:grid;place-items:center;color:#9aa6c4;font:13px Tahoma,sans-serif}
+.bar{display:flex;align-items:center;gap:10px;padding:10px 12px;background:linear-gradient(#e3ebfb,#b6c9f2 55%,#9db6ea)}
+.play{width:38px;height:38px;flex:none;border-radius:50%;border:2px solid #3b5fa8;background:radial-gradient(circle at 35% 30%,#fff,#9fc0ff 60%,#4d7de0);font-size:14px;color:#1d3a85;cursor:pointer}
+.play:focus-visible,input:focus-visible{outline:3px solid #ffb300;outline-offset:2px}
+#seek{flex:1;min-width:0;accent-color:#3b6fe0}
+#vol{width:64px;accent-color:#3b6fe0}
+#clock{font:11px Tahoma,sans-serif;color:#17306e;min-width:92px;text-align:right}
+@media(max-width:420px){#vol{display:none}.stage{padding:16px}}
+@media(prefers-reduced-motion:reduce){.lyric,.pic{transition:none}}
+</style>
+</head>
+<body>
+<div class="win">
+  <div class="title"><span>Windows Media Player</span><i></i><i></i><i class="x"></i></div>
+  <div class="menu"><span>File</span><span>View</span><span>Play</span><span>Tools</span><span>Help</span></div>
+  <div class="stage"><div class="lyric off" id="lyric"></div><div class="pic off" id="pic"></div></div>
+  <div class="bar">
+    <button class="play" id="play" aria-label="Play">&#9654;</button>
+    <input type="range" id="seek" min="0" max="100" step="0.1" value="0" aria-label="Seek">
+    <span id="clock">0:00.0</span>
+    <input type="range" id="vol" min="0" max="1" step="0.05" value="0.8" aria-label="Volume">
+  </div>
+</div>
+<audio id="a" src="garden.mp3" preload="auto"></audio>
+
+<script>
+/* =====================================================================
+   1) LYRICS: one line per row. Each row = one screen. A blank row = blank screen.
+      Replace the placeholder rows with your lyrics (same number of rows).
+   ===================================================================== */
+const LYRICS = `I miss being alone with you
+And staring at the stars on a cold night
+Looking for the brightest ones as the sun comes up now
+I miss singing along with you
+Oh every song we sing just feels right
+Looking for the right words is so easy when you're around
+So do you miss me too?
+I hope you miss me too
+When the sun sets I will be out in the garden
+Will you meet me there and we'll dance and we'll dance
+Take me back to the time when we started
+Take me back to the last to the last
+Oh when the sun sets I will be out in the garden
+Will you meet me there and we'll dance and we'll dance
+Take me back to the time when we started
+Take me back to the last to the last
+I miss being at the top of the mountain screaming your name
+Every time I'm on stage I think of doing the same
+I don't ever wanna change
+I don't ever wanna change now
+'Cause if I ever forget who I am
+I know you're there to remind me
+All this in nothing if it's not about you
+All this is nothing now
+All this is nothing now
+All this is nothing if it's not about you
+So do you miss me too?
+I hope you miss me too
+When the sun sets I will be out in the garden
+Will you meet me there and we'll dance and we'll dance
+Take me back to the time when we started
+Take me back to the last to the last
+Oh when the sun sets I will be out in the garden
+Will you meet me there and we'll dance and we'll dance
+Take me back to the time when we started
+Take me back to the last to the last
+All this is nothing now
+All this is nothing now
+All this is nothing if it's not about you
+All this is nothing now
+All this is nothing now
+All this is nothing if it's not about you
+All this is nothing now
+All this is nothing now
+All this is nothing if it's not about you
+All this is nothing now
+All this is nothing now
+All this is nothing if it's not about you
+When the sun sets I will be out in the garden
+Will you meet me there and we'll dance and we'll dance
+Take me back to the time when we started
+Take me back to the last to the last
+Oh when the sun sets I will be out in the garden
+Will you meet me there and we'll dance and we'll dance
+Take me back to the time when we started
+Take me back to the last to the last
+Oh when the sun sets I will be out in the garden
+Will you meet me there and we'll dance and we'll dance
+Take me back to the time when we started
+Take me back to the last to the last
+Oh when the sun sets I will be out in the garden
+Will you meet me there and we'll dance and we'll dance
+Take me back to the time when we started
+Take me back to the last to the last`;
+
+/* =====================================================================
+   2) IMAGES: put your picture files here (e.g. "img/cat1.png").
+      "" = shows a dashed placeholder box. The number is used in TIMES below.
+   ===================================================================== */
+const IMAGES = ["frog.jpg", "frog2.jpg", "frog3.jpg", "frog4.jpg", "frog5.jpg"];   // 0..4
+
+/* =====================================================================
+   3) TIMES: [seconds when the line appears, image number].
+      These are ROUGH GUESSES (spaced evenly). The first 35 seconds are instrumental, so line 1 starts at 35.5. Adjust the first number of each row.
+      The clock next to the play bar shows the exact time while the song plays.
+      Row N here = row N of LYRICS.
+   ===================================================================== */
+const OFFSET = 0;   // shifts EVERY line earlier (+) or later (-) by this many seconds
+const TIMES = [
+  [ 35.5, 0],  // line 1 (verse 1a)
+  [ 39.8, 1],  // line 2 (verse 1a)
+  [ 44.0, 2],  // line 3 (verse 1a)
+  [ 52.2, 3],  // line 4 (verse 1b)
+  [ 55.5, 4],  // line 5 (verse 1b)
+  [ 59.4, 0],  // line 6 (verse 1b)
+  [ 65.8, 1],  // line 7 (pre-chorus)
+  [ 73.7, 2],  // line 8 (pre-chorus)
+  [ 82.5, 3],  // line 9 (chorus 1)
+  [ 85.8, 4],  // line 10 (chorus 1)
+  [ 90.0, 0],  // line 11 (chorus 1)
+  [ 94.2, 1],  // line 12 (chorus 1)
+  [ 97.5, 2],  // line 13 (chorus 1)
+  [ 101.8, 3],  // line 14 (chorus 1)
+  [ 106.0, 4],  // line 15 (chorus 1)
+  [ 109.2, 0],  // line 16 (chorus 1)
+  [130.8, 1],  // line 17 (bridge)
+  [135.8, 2],  // line 18 (bridge)
+  [139.0, 3],  // line 19 (bridge)
+  [140.8, 4],  // line 20 (bridge)
+  [145.3, 0],  // line 21 (bridge)
+  [148.1, 1],  // line 22 (bridge)
+  [151.0, 2],  // line 23 (bridge)
+  [155.2, 3],  // line 24 (bridge)
+  [157.5, 4],  // line 25 (bridge)
+  [159.8, 0],  // line 26 (bridge)
+  [162.0, 1],  // line 27 (pre-chorus 2)
+  [168.2, 2],  // line 28 (pre-chorus 2)
+  [177.5, 3],  // line 29 (chorus 2)
+  [180.5, 4],  // line 30 (chorus 2)
+  [185.0, 0],  // line 31 (chorus 2)
+  [189.2, 1],  // line 32 (chorus 2)
+  [191.5, 2],  // line 33 (chorus 2)
+  [196.8, 3],  // line 34 (chorus 2)
+  [200.0, 4],  // line 35 (chorus 2)
+  [204.2, 0],  // line 36 (chorus 2)
+  [208.5, 1],  // line 37 (breakdown)
+  [210.8, 2],  // line 38 (breakdown)
+  [212.0, 3],  // line 39 (breakdown)
+  [215.2, 4],  // line 40 (breakdown)
+  [217.5, 0],  // line 41 (breakdown)
+  [219.8, 1],  // line 42 (breakdown)
+  [223.0, 2],  // line 43 (breakdown)
+  [225.2, 3],  // line 44 (breakdown)
+  [227.5, 4],  // line 45 (breakdown)
+  [230.8, 0],  // line 46 (breakdown)
+  [232.0, 1],  // line 47 (breakdown)
+  [234.2, 2],  // line 48 (breakdown)
+  [237.5, 3],  // line 49 (final choruses)
+  [240.8, 4],  // line 50 (final choruses)
+  [245.0, 0],  // line 51 (final choruses)
+  [249.2, 1],  // line 52 (final choruses)
+  [252.0, 2],  // line 53 (final choruses)
+  [257.0, 3],  // line 54 (final choruses)
+  [260.6, 4],  // line 55 (final choruses)
+  [264.4, 0],  // line 56 (final choruses)
+  [267.4, 1],  // line 57 (final choruses)
+  [271.2, 2],  // line 58 (final choruses)
+  [275.0, 3],  // line 59 (final choruses)
+  [279.2, 4],  // line 60 (final choruses)
+  [282.2, 0],  // line 61 (final choruses)
+  [286.7, 1],  // line 62 (final choruses)
+  [291.0, 2],  // line 63 (final choruses)
+  [294.2, 3],  // line 64 (final choruses)
+];
+
+/* ============================ engine (no need to edit) ============================ */
+const $ = id => document.getElementById(id);
+const a = $("a"), lyric = $("lyric"), pic = $("pic"), seek = $("seek"), play = $("play"), clock = $("clock");
+const lines = LYRICS.split("\n");
+if (lines.length !== TIMES.length) console.warn("LYRICS has " + lines.length + " rows but TIMES has " + TIMES.length);
+let shown = -2;
+
+function fmt(t) { const m = Math.floor(t / 60); return m + ":" + (t - m * 60).toFixed(1).padStart(4, "0"); }
+
+function activeIndex(t) {
+  let k = -1;
+  for (let i = 0; i < TIMES.length; i++) { if (TIMES[i][0] - OFFSET <= t) k = i; else break; }
+  return k;
+}
+
+function show(k) {
+  if (k === shown) return;
+  shown = k;
+  const text = k >= 0 ? (lines[k] || "").trim() : "";
+  lyric.classList.add("off"); pic.classList.add("off");
+  setTimeout(() => {
+    if (shown !== k) return;
+    lyric.textContent = text;
+    pic.replaceChildren();
+    if (text) {
+      const src = IMAGES[TIMES[k][1]];
+      if (src) { const im = new Image(); im.src = src; im.alt = ""; pic.append(im); }
+      else { const d = document.createElement("div"); d.className = "ph"; d.textContent = "image " + (TIMES[k][1] + 1); pic.append(d); }
+      lyric.classList.remove("off"); pic.classList.remove("off");
+    }
+  }, 120);
+}
+
+function tick() {
+  const t = a.currentTime;
+  show(activeIndex(t));
+  clock.textContent = fmt(t) + " / " + fmt(a.duration || 0);
+  if (!seek.matches(":active")) seek.value = t;
+  if (!a.paused) requestAnimationFrame(tick);
+}
+
+play.onclick = () => (a.paused ? a.play() : a.pause());
+a.onplay = () => { play.innerHTML = "&#10074;&#10074;"; play.setAttribute("aria-label", "Pause"); tick(); };
+a.onpause = () => { play.innerHTML = "&#9654;"; play.setAttribute("aria-label", "Play"); tick(); };
+a.onended = () => { a.currentTime = 0; tick(); };
+a.onloadedmetadata = () => { seek.max = a.duration; tick(); };
+seek.oninput = () => { a.currentTime = +seek.value; tick(); };
+$("vol").oninput = e => { a.volume = +e.target.value; };
+a.volume = 0.8;
+</script>
+</body>
+</html>
